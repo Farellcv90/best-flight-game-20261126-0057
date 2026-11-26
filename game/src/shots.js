@@ -6,6 +6,7 @@ import { RINGS, RUNWAY } from './config.js';
 import { freshFlight, stepFlight } from './physics.js';
 import { freshMission, applyEvents } from './missions.js';
 import { CAMERA_CHASE, CAMERA_COCKPIT } from './render.js';
+import { groundHeight } from './terrain.js';
 
 const SAMPLE = 1 / 30;
 
@@ -17,9 +18,12 @@ function autopilotInput(flight, targetX, targetY, targetZ, throttleTarget) {
   let diff = wantHeading - flight.heading;
   while (diff > Math.PI) diff -= Math.PI * 2;
   while (diff < -Math.PI) diff += Math.PI * 2;
-  const roll = Math.max(-1, Math.min(1, -diff * 1.4));
+  const roll = Math.max(-0.5, Math.min(0.5, -diff * 1.4));
   const altError = targetY - flight.y;
-  const pitch = Math.max(-1, Math.min(1, -altError * 0.02));
+  let pitch = Math.max(-1, Math.min(1, -altError * 0.02));
+  // Terrain avoidance: pull up hard when the ground gets too close,
+  // whatever the target altitude says.
+  if (flight.y < groundHeight(flight.x, flight.z) + 25) pitch = -1;
   return {
     pitch: -pitch,
     roll,
@@ -49,12 +53,16 @@ export function stageShot(name, flight, mission) {
   Object.assign(mission, freshMission());
 
   if (name === 'cockpit') {
-    flyFor(flight, mission, 26, (f) => (f.ringsDone < RINGS.length ? RINGS[f.ringsDone] : { x: 0, y: 60, z: 420 }), 0.7);
+    // A shorter climb toward ring 1: gentle bank, nose over the coast.
+    flyFor(flight, mission, 18, (f) => (f.ringsDone < RINGS.length ? RINGS[f.ringsDone] : { x: 0, y: 60, z: 420 }), 0.7);
+    // Freeze the frame wings-level so the cockpit reads, not the bank.
+    flight.roll = 0;
+    flight.pitch = 0.02;
     return { screen: 'play', camera: CAMERA_COCKPIT };
   }
   if (name === 'ring') {
     // Fly low along the coast toward ring 1, framed just before the hoop.
-    flyFor(flight, mission, 30, (f) => (f.ringsDone < RINGS.length ? RINGS[f.ringsDone] : { x: 0, y: 60, z: 420 }), 0.75);
+    flyFor(flight, mission, 16, (f) => (f.ringsDone < RINGS.length ? RINGS[f.ringsDone] : { x: 0, y: 60, z: 420 }), 0.75);
     return { screen: 'play', camera: CAMERA_CHASE };
   }
   if (name === 'landing') {
@@ -62,17 +70,18 @@ export function stageShot(name, flight, mission) {
     flyFor(flight, mission, 150, (f) => (f.ringsDone < RINGS.length ? RINGS[f.ringsDone] : { x: 0, y: 45, z: 700 }), 0.7);
     flight.ringsDone = RINGS.length;
     flight.x = 0;
-    flight.z = RUNWAY.z + 420;
-    flight.y = 48;
+    flight.z = RUNWAY.z + 220;
+    flight.y = 32;
     flight.heading = 0;
     flight.pitch = -0.08;
     flight.roll = 0;
-    flight.speed = 30;
+    flight.speed = 28;
     flight.throttle = 0.35;
     flight.fuel = 42;
     return { screen: 'play', camera: CAMERA_CHASE };
   }
-  // start (cover): rolling down the runway, rings and town ahead.
-  flyFor(flight, mission, 9, () => ({ x: 0, y: 30, z: -200 }), 0.85);
-  return { screen: 'title', camera: CAMERA_CHASE };
+  // start (cover): rolling down the runway, then climbing away with the
+  // runway below, the town and a ring ahead — shown in play, HUD lit.
+  flyFor(flight, mission, 10, () => ({ x: -160, y: 75, z: -150 }), 0.85);
+  return { screen: 'play', camera: CAMERA_CHASE };
 }

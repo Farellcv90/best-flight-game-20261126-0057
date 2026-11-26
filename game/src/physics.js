@@ -96,8 +96,21 @@ export function stepFlight(flight, input, dt) {
   flight.verticalSpeed = lift;
   flight.x += (forwardX * flight.speed + flight.windX * 0.35) * dt;
   flight.z += (forwardZ * flight.speed + flight.windZ * 0.35) * dt;
-  flight.y += flight.verticalSpeed * dt;
-  if (flight.speed > PLANE.stallSpeed + 4) flight.airborne = true;
+
+  // On the ground the plane rolls on its gear: it cannot sink through the
+  // runway while it is still gathering speed, and it only leaves the
+  // ground once it has rotation speed and the nose is up.
+  const groundNow = groundHeight(flight.x, flight.z);
+  if (!flight.airborne) {
+    flight.y = groundNow + PLANE.gearHeight;
+    flight.verticalSpeed = 0;
+    if (flight.speed > 26 && flight.pitch > 0.04) {
+      flight.airborne = true;
+      flight.y += lift * dt;
+    }
+  } else {
+    flight.y += flight.verticalSpeed * dt;
+  }
 
   // Stay inside the playfield: a soft invisible fence turns you back.
   const radius = Math.hypot(flight.x, flight.z);
@@ -145,10 +158,21 @@ export function stepFlight(flight, input, dt) {
   const clearance = flight.y - PLANE.gearHeight - ground;
   if (clearance <= 0) {
     flight.y = ground + PLANE.gearHeight;
+    if (!flight.airborne) {
+      // Still rolling on its gear: no touchdown, no damage, keep speed.
+      return events;
+    }
     const vertical = Math.abs(flight.verticalSpeed);
     const onStrip = onRunway(flight.x, flight.z);
     const aligned = Math.abs(flight.heading) < 0.35 || Math.abs(Math.abs(flight.heading) - Math.PI) < 0.35;
     const gentle = vertical < 3.2 && flight.speed < 34 && Math.abs(flight.roll) < 0.35;
+    if (flight.speed < 10 && vertical < 3.2) {
+      // Rolled to a stop: back on the ground, no drama.
+      flight.airborne = false;
+      flight.pitch = 0;
+      flight.roll = 0;
+      return events;
+    }
     if (onStrip && aligned && gentle && flight.ringsDone >= RINGS.length) {
       flight.landed = true;
       flight.landingSoftness = clamp(1 - vertical / 3.2, 0, 1);

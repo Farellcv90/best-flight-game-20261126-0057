@@ -185,7 +185,9 @@ function frame(now) {
   }
 
   hud.update(flight, mission.score, dt);
-  renderFrame(world, flight, cameraMode, shotMode ? 0 : dt, now / 1000);
+  // In shot mode the physics is frozen but the camera, propeller and
+  // clouds still animate, so the staged frame settles into place.
+  renderFrame(world, flight, cameraMode, dt, now / 1000);
 }
 
 document.title = GAME.name;

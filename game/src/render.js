@@ -34,7 +34,7 @@ export function createScene(canvas) {
   sky.name = 'sky-dome';
   scene.add(sky);
 
-  scene.fog = new THREE.Fog(0xf2c184, 500, 2200);
+  scene.fog = new THREE.Fog(0xe8b98a, 800, 2600);
 
   // Low golden sun + warm hemisphere fill.
   const sun = new THREE.DirectionalLight(0xffd9a0, 1.6);
@@ -110,7 +110,9 @@ export function placePlane(world, flight) {
   const group = world.plane.group;
   group.position.set(flight.x, flight.y, flight.z);
   group.rotation.set(0, 0, 0);
-  group.rotateY(flight.heading);
+  // The mesh's nose points down -z, so a negative yaw turns it onto the
+  // flight model's forward vector (sin h, -cos h).
+  group.rotateY(-flight.heading);
   group.rotateX(flight.pitch);
   group.rotateZ(flight.roll);
 }
@@ -132,25 +134,29 @@ function chaseCamera(world, flight, dt) {
   camera.rotation.z = flight.roll * 0.25; // gentle bank with the plane
 }
 
-/** Cockpit camera: at the canopy, looking straight ahead. */
+/** Cockpit camera: just behind the nose, above the canopy, looking
+ *  straight ahead over the nose so the terrain reads, not the airframe. */
 function cockpitCamera(world, flight) {
   const camera = world.camera;
   const fx = Math.sin(flight.heading);
   const fz = -Math.cos(flight.heading);
-  camera.position.set(flight.x, flight.y + 1.1, flight.z);
+  camera.position.set(flight.x + fx * 2.2, flight.y + 1.35, flight.z + fz * 2.2);
   const look = new THREE.Vector3(
-    flight.x + fx * 40 - Math.sin(flight.heading) * 0,
+    flight.x + fx * 40,
     flight.y + Math.sin(flight.pitch) * 40,
     flight.z + fz * 40,
   );
   camera.lookAt(look);
-  camera.rotation.z = flight.roll * 0.12;
+  camera.rotation.z = flight.roll * 0.05;
 }
 
 /** One render tick: move the plane, cameras, rings and clouds, then draw. */
 export function renderFrame(world, flight, mode, dt, time) {
   placePlane(world, flight);
   spinPropeller(world.plane.propeller, flight.throttle, dt);
+  // In the cockpit the propeller sits right in front of the camera, so
+  // hide it there; the chase view keeps it spinning.
+  world.plane.propeller.visible = mode !== CAMERA_COCKPIT;
   if (mode === CAMERA_COCKPIT) cockpitCamera(world, flight);
   else chaseCamera(world, flight, dt);
   // Pulse the next ring; dim the ones already flown.
