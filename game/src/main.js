@@ -103,6 +103,7 @@ function showScreen() {
   overlay.querySelectorAll('button').forEach((button) => {
     button.addEventListener('click', () => {
       audio.ensure();
+      audio.click();
       doAction(button.dataset.action);
     });
   });

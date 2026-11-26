@@ -134,13 +134,13 @@ function chaseCamera(world, flight, dt) {
   camera.rotation.z = flight.roll * 0.25; // gentle bank with the plane
 }
 
-/** Cockpit camera: just behind the nose, above the canopy, looking
- *  straight ahead over the nose so the terrain reads, not the airframe. */
+/** Cockpit camera: above the nose, looking straight ahead over it so the
+ *  terrain reads and only the nose tip frames the bottom of the view. */
 function cockpitCamera(world, flight) {
   const camera = world.camera;
   const fx = Math.sin(flight.heading);
   const fz = -Math.cos(flight.heading);
-  camera.position.set(flight.x + fx * 2.2, flight.y + 1.35, flight.z + fz * 2.2);
+  camera.position.set(flight.x + fx * 3.4, flight.y + 2.3, flight.z + fz * 3.4);
   const look = new THREE.Vector3(
     flight.x + fx * 40,
     flight.y + Math.sin(flight.pitch) * 40,

@@ -88,6 +88,15 @@ export function buildAircraft() {
   stripe.position.set(0, 0.1, 0.4);
   group.add(stripe);
 
+  // Navigation lights: red on the left wingtip, green on the right.
+  const navLightGeo = new THREE.SphereGeometry(0.22, 8, 6);
+  const navLeft = new THREE.Mesh(navLightGeo, new THREE.MeshBasicMaterial({ color: 0xff2a2a }));
+  navLeft.position.set(-6.85, -0.15, -0.4);
+  group.add(navLeft);
+  const navRight = new THREE.Mesh(navLightGeo, new THREE.MeshBasicMaterial({ color: 0x2aff66 }));
+  navRight.position.set(6.85, -0.15, -0.4);
+  group.add(navRight);
+
   return { group, propeller };
 }
 

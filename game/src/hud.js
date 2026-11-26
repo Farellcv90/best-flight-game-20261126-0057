@@ -3,6 +3,7 @@
 // counter, mission text, an artificial horizon, and warning lights. The
 // instruments are drawn with lit gradients and needles, not flat text.
 import { PLANE, RINGS } from './config.js';
+import { nextTargetLabel, targetBearing } from './missions.js';
 
 const KNOTS_PER_MS = 1.94384;
 
@@ -118,9 +119,12 @@ export function createHud(root) {
     ringValue.textContent = `${flight.ringsDone} / ${RINGS.length}`;
     dots.forEach((dot, i) => dot.classList.toggle('done', i < flight.ringsDone));
     const next = RINGS[flight.ringsDone];
-    mission.textContent = next
-      ? `✈ ${next.label} — fly through the green ring`
-      : '✈ All rings done — land on the runway!';
+    if (next) {
+      const bearing = targetBearing(flight);
+      mission.textContent = `✈ ${nextTargetLabel(flight)} — ${bearing.distance} m · ${bearing.bearing}°`;
+    } else {
+      mission.textContent = '✈ All rings done — land on the runway!';
+    }
     horizonDisc.style.transform = `rotate(${-flight.roll}rad) translateY(${flight.pitch * 40}px)`;
     warnFuel.classList.toggle('on', flight.fuel < 25);
     warnDamage.classList.toggle('on', flight.damage > 40);

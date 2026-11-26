@@ -31,6 +31,7 @@ export const PLANE = {
   turnRate: 0.55,
   throttleRate: 0.55, // per second
   gearHeight: 2.2,
+  takeoffSpeed: 26, // m/s: rotation speed — the nose only lifts past this
   fuelCapacity: 100,
   fuelBurn: 2.6, // per second at full throttle
   maxDamage: 100,

@@ -48,3 +48,8 @@ export function makeNoise2D(seed) {
 export function pick(rng, items) {
   return items[Math.floor(rng() * items.length)];
 }
+
+/** A number in [min, max) from the given RNG. */
+export function range(rng, min, max) {
+  return min + rng() * (max - min);
+}

@@ -23,6 +23,8 @@ export function createInput() {
     keys.delete(event.code);
   }
   function onMouseMove(event) {
+    // Only the canvas steers: moving over menus and panels must not trim.
+    if (event.target && event.target.tagName !== 'CANVAS') return;
     state.mouseX = (event.clientX / window.innerWidth) * 2 - 1;
     state.mouseY = (event.clientY / window.innerHeight) * 2 - 1;
     state.mouseActive = true;

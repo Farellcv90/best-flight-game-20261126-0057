@@ -104,7 +104,7 @@ export function stepFlight(flight, input, dt) {
   if (!flight.airborne) {
     flight.y = groundNow + PLANE.gearHeight;
     flight.verticalSpeed = 0;
-    if (flight.speed > 26 && flight.pitch > 0.04) {
+    if (flight.speed > PLANE.takeoffSpeed && flight.pitch > 0.04) {
       flight.airborne = true;
       flight.y += lift * dt;
     }

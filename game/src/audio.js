@@ -120,6 +120,11 @@ export function createAudio() {
     blip(660, 0.18, 'square', 0.12);
   }
 
+  /** Soft UI click for menu buttons. */
+  function click() {
+    blip(1200, 0.07, 'sine', 0.12);
+  }
+
   /** A soft crash rumble: falling noise burst. */
   function crashSound() {
     if (!ctx || muted) return;
@@ -148,5 +153,5 @@ export function createAudio() {
     return muted;
   }
 
-  return { ensure, update, ringChime, touchdown, warningBeep, crashSound, toggleMute };
+  return { ensure, update, ringChime, touchdown, warningBeep, crashSound, click, toggleMute };
 }

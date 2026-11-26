@@ -4,7 +4,7 @@
 // the south of the island, with a town, palm clusters and hills around it.
 import * as THREE from 'three';
 import { COLOURS, RUNWAY, WORLD } from './config.js';
-import { makeNoise2D, makeRng } from './random.js';
+import { makeNoise2D, makeRng, range } from './random.js';
 
 const noise = makeNoise2D(90210);
 
@@ -177,7 +177,7 @@ export function buildTerrain(scene, seed) {
       puff.scale.y = 0.45;
       cloud.add(puff);
     }
-    cloud.position.set((rng() - 0.5) * 2000, 190 + rng() * 90, (rng() - 0.5) * 2000);
+    cloud.position.set((rng() - 0.5) * 2000, range(rng, 190, 280), (rng() - 0.5) * 2000);
     clouds.add(cloud);
   }
   group.add(clouds);

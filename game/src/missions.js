@@ -71,6 +71,12 @@ export function nextTarget(flight) {
   return { x: 0, y: 40, z: 420, r: 30, label: 'Runway — land here' };
 }
 
+/** Short label for the next navigation target, for the HUD mission line. */
+export function nextTargetLabel(flight) {
+  if (flight.ringsDone < RINGS.length) return RINGS[flight.ringsDone].label;
+  return 'Runway — land here';
+}
+
 /** Bearing (degrees) and distance to the next target, for the HUD. */
 export function targetBearing(flight) {
   const target = nextTarget(flight);
